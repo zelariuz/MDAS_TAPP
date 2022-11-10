@@ -14,7 +14,7 @@ from twisted.internet.defer import inlineCallbacks
 # from library.models import EndpointModels
 
 #Utilidades
-from library.utils import decodeFile, encodeFile, createTestFile, loadModelObjectFile
+from library.utils import decodeFile, encodeFile, createTestFile, loadModelObjectFile, trainingModelBase
 
 class ServerFactory(jsonrpc.JSONRPC):
 	"""
@@ -63,5 +63,31 @@ class ServerFactory(jsonrpc.JSONRPC):
 		print('loadModelObjectFile', f)
 
 		jsonResponse = {'response' : 1, 'modelDataBase64' : modelDataBase64}
+		yield 1+1 # condicion minima para que sea un diferido
+		return jsonResponse
+
+	@inlineCallbacks
+	def jsonrpc_createBaseModel(self):
+		"""
+			Creamos el modelo base
+		"""
+		filename = 'model/modelBase.model'
+		trainingModelBase(filename)
+
+		jsonResponse = {'response' : 1}
+		yield 1+1 # condicion minima para que sea un diferido
+		return jsonResponse
+
+	@inlineCallbacks
+	def jsonrpc_predict(self, text = ''):
+		"""
+			Creamos el modelo base
+		"""
+		filename = 'model/modelBase.model'
+		model_lr = loadModelObjectFile(filename)
+
+		result = model_lr.predict([text])
+
+		jsonResponse = {'response' : 1, 'predict': ('Positive' if result[0] == 1 else 'Negative')}
 		yield 1+1 # condicion minima para que sea un diferido
 		return jsonResponse
