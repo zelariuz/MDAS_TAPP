@@ -7,3 +7,4 @@ ign_*
 *.pid
 *.model
 *.modelb64
+node_modules
