@@ -5,3 +5,5 @@ ign_*
 .~lock*.xlsx#
 *.log*
 *.pid
+*.model
+*.modelb64
