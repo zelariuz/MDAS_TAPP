@@ -13,21 +13,26 @@
       Análisis de sentimiento
     </p>
     <div class="form-control w-full max-w-xs">
-      <label class="label">
-        <span class="label-text">Comentario</span>
-      </label>
-      <input type="text" placeholder="Type here" class="input input-bordered w-full max-w-xs" />
-      <label class="label">
-        <span class="label-text-alt">En inglés</span>
-      </label>
+      <form class="w-full" id="form-predict">
+        <label class="label">
+          <span class="label-text">Comentario</span>
+        </label>
+        <input type="text" name="text" placeholder="Type here" required class="input input-bordered w-full max-w-xs" id="input-text" />
+        <label class="label">
+          <span class="label-text-alt">En inglés</span>
+        </label>
+        <button id="button-submit" type="submit" class="btn flex-shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded w-full" type="button">
+          Predecir sentimiento
+        </button>
+      <form/>
     </div>
 
-    <button class="flex-shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded" type="button">
-      Predecir sentimiento
-    </button>
 
   <div />
-  <div class="mt-5" id="result" style="display:none">
+  <div class="mt-5 loading" id="result" style="display:none">
+    <p class="text-green-700 text-xl mb-3">
+      Última predicción
+    </p>
     <p class="text-green-700 text-xl mb-3 text-center font-bold" id="result-text">
       Resultado
     </p>
@@ -55,6 +60,83 @@
     </label>
   </div>
 
+  <script>
+    // Example POST method implementation:
+    async function postData(url = '', data = {}) {
+      // Default options are marked with *
+      const response = await fetch(url, {
+        method: 'POST', // *GET, POST, PUT, DELETE, etc.
+        mode: 'cors', // no-cors, *cors, same-origin
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'same-origin', // include, *same-origin, omit
+        headers: {
+          'Content-Type': 'application/json'
+          // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        redirect: 'follow', // manual, *follow, error
+        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+        body: JSON.stringify(data) // body data type must match "Content-Type" header
+      });
+      return response.json(); // parses JSON response into native JavaScript objects
+    }
+
+    function setLoading(){
+      document.getElementById('input-text').disabled = true
+      document.getElementById('button-submit').disabled = true
+      document.getElementById("button-submit").innerHTML = 'Prediciendo ...'
+      document.getElementById("button-submit").classList.add("loading");
+    }
+
+    function endLoading(){
+      document.getElementById('input-text').disabled = false
+      document.getElementById('button-submit').disabled = false
+      document.getElementById("button-submit").innerHTML = 'Predecir sentimiento'
+      document.getElementById("button-submit").classList.remove("loading");
+    }
+
+    function showPredict(positive=false){
+      document.getElementById("result-text").innerHTML = !!positive? 'Positivo' : 'Negativo'
+      document.getElementById("result-check").checked = positive
+      document.getElementById("result").style.display = ''
+    }
+
+    function processForm(e) {
+        if (e.preventDefault) e.preventDefault();
+
+        /* do what you want with the form */
+        let formData = new FormData(e.target);
+
+        //Deteccion de Vacio y si coloco una imagen, ver si este se ha respondido.
+        // Nota cuando hay una pregunta con foto pero sin respuesta se corta la validacion.
+        const dataValues = Object.fromEntries(formData.entries());
+        console.log({dataValues})
+
+        // Estado loading
+        setLoading()
+        postData('/predict', dataValues)
+          .then((data) => {
+            console.log(data); // JSON data parsed by `data.json()` call
+            showPredict(data.predict !== 'Negative')
+          })
+          .catch((e) => {
+            console.error(e); // JSON data parsed by `data.json()` call
+          })
+          .finally(()=>{
+            console.log('OK')
+            endLoading()
+          })
+
+        // You must return false to prevent the default form behavior
+        return false;
+    }
+
+    var form = document.getElementById('form-predict');
+    if (form.attachEvent) {
+        form.attachEvent("submit", processForm);
+    } else {
+        form.addEventListener("submit", processForm);
+    }
+  </script>
 
 </body>
 </html>
